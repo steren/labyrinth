@@ -1,29 +1,30 @@
 var parameters = {
-    squareSize : 20, //px
-    wallSize : 3,
-    width: 30,
-    height: 30,
-    backgroundColor: '#fff',
+    squareSize : 10, //px
+    wallSize : 4,
+    width: 20,
+    height: 20,
+    backgroundColor: '#000',
     startColor: '#fff',
     color: '#fff',
     startPosition: {x:5, y:5},
-    //growProbabilities : [0.95, 0.99] // [0, 0.8]: no divergeance, [0.8, 0.9] : divergeance...
-    growProbabilities : [0.99999, 0.999999],
-    lifeTime : 64
+    // between 0 and first element: no divergeance, first parameter and second : 2 tunnels, secod anfd 1 : 3 tunnels
+    growProbabilities : [0.95, 0.99],
+    //growProbabilities : [0.99999, 0.999999],
+    drawingTiming : 0
   };
 
 var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
 
 var maxDistance = 0;
 
 function getColor(value) {
-    return 'hsl('+ Math.floor(value / maxDistance * 360) +', 100%, 70%)';
+    //return 'hsl('+ Math.floor(value / maxDistance * 360) +', 100%, 70%)';
     //return 'hsl(0, 70%, ' + Math.floor(100 * value / maxDistance) +'%)';
-    //return 'hsl(0, 100%, '+ Math.floor(100*0.5*(1+Math.sin(2*Math.PI*(value-1) / maxDistance))) +'%)';
+    return parameters.color;
 }
 
 function drawLabyrinth(canvasElement, matrix, matrixWallX, matrixWallY, parameters) {
-    var ctx = canvasElement.getContext('2d');
     canvas.width = parameters.width * ( parameters.squareSize + parameters.wallSize ) + parameters.wallSize;
     canvas.height = parameters.height * ( parameters.squareSize + parameters.wallSize ) + parameters.wallSize;
 
@@ -270,7 +271,7 @@ function iterate() {
         var leaf = stack.shift();
         growSquare(leaf[0], leaf[1]);
         drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
-        setTimeout(iterate, 5 / stack.length);
+        setTimeout(iterate, parameters.drawingTiming / stack.length);
     }
     else {
         start = checkBlack();
@@ -278,7 +279,7 @@ function iterate() {
             stack.push([start[0], start[1]]);
             labyrinth[start[0]][start[1]] = labyrinth[start[2]][start[3]] +1;
             createWall(start[2],start[3], start[0],start[1]);
-            setTimeout(iterate, 5);
+            setTimeout(iterate, parameters.drawingTiming);
         }
     }
 }
@@ -287,6 +288,6 @@ function iterate() {
 
 
 // GOGOGO
-setTimeout(iterate, 5);
+setTimeout(iterate, parameters.drawingTiming);
 
 drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
