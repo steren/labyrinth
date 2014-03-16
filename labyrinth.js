@@ -1,8 +1,14 @@
+engineParameters = {
+  /** ideal ratio to respect between the suqre size and the wall size */
+  squareWallRatio : 10
+}
+
+/** Parameters needed to generate the maze */
 var parameters = {
-    squareSize : 10, //px
-    wallSize : 5,
-    width: 30,
-    height: 30,
+    squareSize : 5, //px
+    wallSize : 3,
+    width: 100,
+    height: 100,
     style: {
       backgroundColor: '#000',
       squareColor: '#fff',
@@ -22,6 +28,19 @@ var parameters = {
     growProbabilities : [0.99999, 0.999999],
     drawingTiming : 0
   };
+
+//computeSquareSize(1680, 1050, parameters);
+
+//parameters.wallSize = 0;
+
+/** Will set parameters.squareSize and wallSize to better match teh desired width and height considering the width and height of the parameters */
+function computeSquareSize(desiredWidth, desiredHeight, parameters) {
+  var sizeW = desiredWidth / ( parameters.width * (1 + 1 / engineParameters.squareWallRatio));
+  var sizeH = desiredHeight / ( parameters.height * (1 + 1 / engineParameters.squareWallRatio));
+
+  parameters.squareSize = Math.floor(Math.min(sizeW, sizeH));
+  parameters.wallSize = Math.ceil(parameters.squareSize / engineParameters.squareWallRatio);
+};
 
 var startPosition = parameters.startPosition;
 if(parameters.startRandom) {
@@ -261,7 +280,7 @@ function getLiberties(x,y) {
     if(isNotHollowAndValid(x+1,y)) {liberties++;}
     if(isNotHollowAndValid(x-1,y)) {liberties++;}
     if(isNotHollowAndValid(x,y+1)) {liberties++;}
-    if(isNotHollowAndValid(x+1,y-1)) {liberties++;}
+    if(isNotHollowAndValid(x,y-1)) {liberties++;}
 
     return liberties;
 }
@@ -294,15 +313,15 @@ function growSquare(x,y) {
     var arr = [0, 1, 2, 3];
     // sort this array ! (eurk)
     var tmp;
-    index = Math.min(Math.floor(Math.random() * 3), 3);
+    index = Math.floor(Math.random() * 4);
     tmp = arr[3];
     arr[3] = arr[index];
     arr[index] = tmp;
-    index = Math.min(Math.floor(Math.random() * 2), 2);
+    index = Math.floor(Math.random() * 3);
     tmp = arr[2];
     arr[2] = arr[index];
     arr[index] = tmp;
-    index = Math.min(Math.floor(Math.random() * 1), 1);
+    index = Math.floor(Math.random() * 2);
     tmp = arr[1];
     arr[1] = arr[index];
     arr[index] = tmp;
@@ -371,19 +390,23 @@ function findSolutionPath(startPos, endPos) {
       }
     }
   }
- 
+
 
   return path;
 }
 
 /** @return an available non-hollow position that is near a hollow position */
 function findNotHollowSquareWithHollowNeighboor(){
-    var i0 = Math.min( Math.floor( labyrinth.length*Math.random()), labyrinth.length-1);
-    var j0 = Math.min(Math.floor(labyrinth[0].length*Math.random()), labyrinth.length-1);
+    var i0 = Math.floor(labyrinth.length*Math.random());
+    var j0 = Math.floor(labyrinth[0].length*Math.random());
+
+    var randXDirection = Math.random() > 0.5 ? -1 : 1;
+    var randYDirection = Math.random() > 0.5 ? -1 : 1;
+
     for(var i = 0; i < labyrinth.length; i++) {
-        ic = (i+i0)%labyrinth.length;
+        ic = ( i0 + randXDirection * i + labyrinth.length ) % labyrinth.length; // added the modulo value to make sure the result is > 0
         for(var j = 0; j < labyrinth[i].length; j++) {
-            jc = (j+j0)%labyrinth[i].length;
+            jc = ( j0 + randXDirection * j + labyrinth[i].length ) % labyrinth[i].length;
 
             if(labyrinth[ic][jc] === 0) {
               var n = getNeighbours(ic,jc);
