@@ -403,18 +403,37 @@ function findNotHollowSquareWithHollowNeighboor(){
     var randXDirection = Math.random() > 0.5 ? -1 : 1;
     var randYDirection = Math.random() > 0.5 ? -1 : 1;
 
-    for(var i = 0; i < labyrinth.length; i++) {
-        ic = ( i0 + randXDirection * i + labyrinth.length ) % labyrinth.length; // added the modulo value to make sure the result is > 0
-        for(var j = 0; j < labyrinth[i].length; j++) {
-            jc = ( j0 + randXDirection * j + labyrinth[i].length ) % labyrinth[i].length;
+    // should we search in the current row or column first?
+    var randRows = Math.random() > 0.5 ? true : false;
 
-            if(labyrinth[ic][jc] === 0) {
-              var n = getNeighbours(ic,jc);
-              if(n.length > 0) {
-                return [ic, jc, n[0][0], n[0][1]];
+    if(randRows) {
+      for(var i = 0; i < labyrinth.length; i++) {
+          ic = ( i0 + randXDirection * i + labyrinth.length ) % labyrinth.length; // added the modulo value to make sure the result is > 0
+          for(var j = 0; j < labyrinth[0].length; j++) {
+              jc = ( j0 + randXDirection * j + labyrinth[0].length ) % labyrinth[0].length;
+
+              if(labyrinth[ic][jc] === 0) {
+                var n = getNeighbours(ic,jc);
+                if(n.length > 0) {
+                  return [ic, jc, n[0][0], n[0][1]];
+                }
               }
-            }
-        }
+          }
+      }
+    } else {
+      for(var i = 0; i < labyrinth[0].length; i++) {
+          ic = ( i0 + randXDirection * i + labyrinth[0].length ) % labyrinth[0].length; // added the modulo value to make sure the result is > 0
+          for(var j = 0; j < labyrinth.length; j++) {
+              jc = ( j0 + randXDirection * j + labyrinth.length ) % labyrinth.length;
+
+              if(labyrinth[ic][jc] === 0) {
+                var n = getNeighbours(ic,jc);
+                if(n.length > 0) {
+                  return [ic, jc, n[0][0], n[0][1]];
+                }
+              }
+          }
+      }
     }
     return false;
 }
