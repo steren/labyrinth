@@ -228,7 +228,7 @@ function isHollowAndValid(x,y) {
         && labyrinth[x][y] > 0;
 }
 
-function createWall(fromX, fromY, toX, toY) {
+function diggWall(fromX, fromY, toX, toY) {
     var diffX = toX - fromX;
     var diffY = toY - fromY;
 
@@ -251,7 +251,7 @@ function tryToGrow(fromX, fromY, toX, toY) {
         labyrinth[toX][toY] = labyrinth[fromX][fromY] + 1;
         maxDistance = Math.max(maxDistance, labyrinth[toX][toY]);
 
-        createWall(fromX, fromY, toX, toY);
+        diggWall(fromX, fromY, toX, toY);
 
         stack.push([toX, toY]);
         return true;
@@ -410,7 +410,7 @@ function findNotHollowSquareWithHollowNeighboor(){
       for(var i = 0; i < labyrinth.length; i++) {
           ic = ( i0 + randXDirection * i + labyrinth.length ) % labyrinth.length; // added the modulo value to make sure the result is > 0
           for(var j = 0; j < labyrinth[0].length; j++) {
-              jc = ( j0 + randXDirection * j + labyrinth[0].length ) % labyrinth[0].length;
+              jc = ( j0 + randYDirection * j + labyrinth[0].length ) % labyrinth[0].length;
 
               if(labyrinth[ic][jc] === 0) {
                 var n = getNeighbours(ic,jc);
@@ -421,10 +421,10 @@ function findNotHollowSquareWithHollowNeighboor(){
           }
       }
     } else {
-      for(var i = 0; i < labyrinth[0].length; i++) {
-          ic = ( i0 + randXDirection * i + labyrinth[0].length ) % labyrinth[0].length; // added the modulo value to make sure the result is > 0
-          for(var j = 0; j < labyrinth.length; j++) {
-              jc = ( j0 + randXDirection * j + labyrinth.length ) % labyrinth.length;
+      for(var j = 0; j < labyrinth[0].length; j++) {
+          jc = ( j0 + randYDirection * j + labyrinth[0].length ) % labyrinth[0].length; // added the modulo value to make sure the result is > 0
+          for(var i = 0; i < labyrinth.length; i++) {
+              ic = ( i0 + randYDirection * i + labyrinth.length ) % labyrinth.length;
 
               if(labyrinth[ic][jc] === 0) {
                 var n = getNeighbours(ic,jc);
@@ -442,38 +442,58 @@ function findNotHollowSquareWithHollowNeighboor(){
 var stack = [];
 var start = [startPosition.x, startPosition.y];
 
-// use while to compute everything without setTimeout
-//while(start) {
-stack.push(start);
-labyrinth[start[0]][start[1]] = 1;
+var vizualizeGrow = false;
 
-
-function iterate() {
-
-    if(stack.length != 0) {
-
-    // use while to compute everything without setTimeout
-    //while(stack.length > 0) {
-        var leaf = stack.shift();
-        growSquare(leaf[0], leaf[1]);
-        drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
-        setTimeout(iterate, parameters.drawingTiming / stack.length);
+if(!vizualizeGrow) {
+  ////////// Use this code to generate maze
+  while(start) {
+    stack.push([start[0], start[1]]);
+    if(start.length === 4) {
+      labyrinth[start[0]][start[1]] = labyrinth[start[2]][start[3]] +1;
+      diggWall(start[2],start[3], start[0],start[1]);
+    } else {
+      labyrinth[start[0]][start[1]] = 1;
     }
-    else {
-        start = findNotHollowSquareWithHollowNeighboor();
-        if(start != false) {
-            stack.push([start[0], start[1]]);
-            labyrinth[start[0]][start[1]] = labyrinth[start[2]][start[3]] +1;
-            createWall(start[2],start[3], start[0],start[1]);
-            setTimeout(iterate, parameters.drawingTiming);
+
+    while(stack.length > 0) {
+      var leaf = stack.shift();
+      growSquare(leaf[0], leaf[1]);
+    }
+
+    start = findNotHollowSquareWithHollowNeighboor();
+  }
+
+  drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
+
+} else {
+  ////////// Use this code to display progression
+
+  stack.push(start);
+  labyrinth[start[0]][start[1]] = 1;
+
+  function iterate() {
+      if(stack.length != 0) {
+          var leaf = stack.shift();
+          growSquare(leaf[0], leaf[1]);
+          //drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
+          setTimeout(iterate, parameters.drawingTiming / stack.length);
         }
-    }
+      else {
+          start = findNotHollowSquareWithHollowNeighboor();
+          if(start != false) {
+              stack.push([start[0], start[1]]);
+              labyrinth[start[0]][start[1]] = labyrinth[start[2]][start[3]] +1;
+              diggWall(start[2],start[3], start[0],start[1]);
+              drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
+              setTimeout(iterate, parameters.drawingTiming);
+
+          } else {
+            drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
+          }
+      }
+  }
+  setTimeout(iterate, parameters.drawingTiming);
+  drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
+
 }
-    //start = findNotHollowSquareWithHollowNeighboor();
-//}
 
-
-// GOGOGO
-setTimeout(iterate, parameters.drawingTiming);
-
-drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
