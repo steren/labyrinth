@@ -1,218 +1,26 @@
-engineParameters = {
-  /** ideal ratio to respect between the suqre size and the wall size */
-  squareWallRatio : 10,
-  vizualizeGrow: false
-}
+function labyrinth(engineParameters) {
 
-/** Parameters needed to generate the maze */
-var parameters = {
-    squareSize : 1, //px
-    wallSize : 0,
-    width: 1600,
-    height: 800,
-    style: {
-      backgroundColor: '#000',
-      squareColor: '#fff',
-      startColor: '#f00',
-      endColor: '#0f0',
-      pathColor: '#aaf'
-    },
-    draw: {
-      start : false,
-      end : false,
-      path : false
-    },
+var defaultEngineParameters = {
+    width: 20,
+    height: 20,
     startRandom : true,
-    startPosition: {x:5, y:5},
+    startPosition: {x:0, y:0},
     // between 0 and first element: no divergeance, first parameter and second : 2 tunnels, secod anfd 1 : 3 tunnels
     //growProbabilities : [0.95, 0.99],
     growProbabilities : [0.99999, 0.999999],
-    drawingTiming : 0,
     goToGlobalDirectionProbability: 0.33,
-    useGlobalDirection: true,
-    colorScheme : 'jet' //defaut to squareColor, possible values : 'hue', 'nanette', 'luminosity', 'icedmint', fire
-  };
+    useGlobalDirection: true
+}
 
-//computeSquareSize(1680, 1050, parameters);
+_.defaults(engineParameters, defaultEngineParameters)
 
-//parameters.wallSize = 0;
-
-/** Will set parameters.squareSize and wallSize to better match the desired width and height considering the width and height of the parameters */
-function computeSquareSize(desiredWidth, desiredHeight, parameters) {
-  var sizeW = desiredWidth / ( parameters.width * (1 + 1 / engineParameters.squareWallRatio));
-  var sizeH = desiredHeight / ( parameters.height * (1 + 1 / engineParameters.squareWallRatio));
-
-  parameters.squareSize = Math.floor(Math.min(sizeW, sizeH));
-  parameters.wallSize = Math.ceil(parameters.squareSize / engineParameters.squareWallRatio);
-};
-
-var startPosition = parameters.startPosition;
-if(parameters.startRandom) {
-  startPosition = {x : Math.floor(Math.random() * parameters.width), y: Math.floor(Math.random() * parameters.height)};
+var startPosition = engineParameters.startPosition;
+if(engineParameters.startRandom) {
+  startPosition = {x : Math.floor(Math.random() * engineParameters.width), y: Math.floor(Math.random() * engineParameters.height)};
 }
 var endPosition;
 
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
-
 var maxDistance = 0;
-
-function getColor(value) {
-  if(!parameters.colorScheme) {
-    return parameters.style.squareColor;
-  }
-  var h,l,s;
-  switch(parameters.colorScheme) {
-    case 'jet':
-      h = Math.floor(value / maxDistance * 360);
-      s = 100;
-      l = 70;
-      break;
-    case 'luminosity':
-      h = 0;
-      s = 70;
-      l = Math.floor(100 * value / maxDistance);
-      break;
-    case 'nanette':
-      h = 240 + Math.floor(120 * value / maxDistance);
-      s = 100;
-      l = Math.floor(100 * value / maxDistance);
-      break;
-    case 'fire':
-      h = - 30 + Math.floor(120 * value / maxDistance);
-      s = 100;
-      l = Math.floor(100 * value / maxDistance);
-      break;
-    case 'icedmint':
-      var periods = 3;
-      h = 180;
-      s = 100;
-      l = Math.floor( 50 +  50 * Math.sin( periods * 2 * Math.PI * value / maxDistance));
-      break;
-  }
-  return 'hsl('+ h +', '+ s + '%, ' + l + '%)';
-}
-
-function drawLabyrinth(canvasElement, matrix, matrixWallX, matrixWallY, parameters) {
-    canvas.width = parameters.width * ( parameters.squareSize + parameters.wallSize ) + parameters.wallSize;
-    canvas.height = parameters.height * ( parameters.squareSize + parameters.wallSize ) + parameters.wallSize;
-
-    function drawSquare(x,y) {
-      ctx.fillRect(parameters.wallSize + x * ( parameters.squareSize + parameters.wallSize),
-          parameters.wallSize + y * ( parameters.squareSize + parameters.wallSize),
-          parameters.squareSize,
-          parameters.squareSize);
-    };
-
-    function drawWallBetween(fromX, fromY, toX, toY) {
-      var diffX = toX - fromX;
-      var diffY = toY - fromY;
-
-      if( diffX === 0 && diffY > 0) {
-
-        ctx.fillRect(
-            parameters.wallSize + fromX * (parameters.wallSize + parameters.squareSize),
-            parameters.wallSize + fromY * (parameters.wallSize + parameters.squareSize) + parameters.squareSize,
-            parameters.squareSize,
-            parameters.wallSize
-        );
-
-      } else if (diffX === 0 && diffY < 0) {
-
-        ctx.fillRect(
-            parameters.wallSize + fromX * (parameters.wallSize + parameters.squareSize),
-            parameters.wallSize + toY * (parameters.wallSize + parameters.squareSize) + parameters.squareSize,
-            parameters.squareSize,
-            parameters.wallSize
-        );
-
-      } else if (diffX > 0 && diffY === 0) {
-
-        ctx.fillRect(
-            parameters.wallSize + fromX * (parameters.wallSize + parameters.squareSize) + parameters.squareSize,
-            parameters.wallSize + toY * (parameters.wallSize + parameters.squareSize),
-            parameters.wallSize,
-            parameters.squareSize
-        );
-
-      } else {
-
-        ctx.fillRect(
-            parameters.wallSize + toX * (parameters.wallSize + parameters.squareSize) + parameters.squareSize,
-            parameters.wallSize + toY * (parameters.wallSize + parameters.squareSize),
-            parameters.wallSize,
-            parameters.squareSize
-        );
-
-      }
-
-
-    }
-
-    // background
-    ctx.fillStyle = parameters.style.backgroundColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // draw hollow squares
-    for(var i = 0; i < matrix.length; i++) {
-      for(var j = 0; j < matrix[i].length; j++) {
-        if(matrix[i][j] !== 0) {
-          ctx.fillStyle = getColor(matrix[i][j]);
-          drawSquare(i,j);
-        }
-      }
-    }
-
-    // draw vertical walls
-    for(var i = 0; i < matrixWallX.length; i++) {
-      for(var j = 0; j < matrixWallX[i].length; j++) {
-        if(matrixWallX[i][j] !== 0) {
-          ctx.fillStyle = getColor(matrixWallX[i][j]);
-          ctx.fillRect(i * ( parameters.squareSize + parameters.wallSize),
-              parameters.wallSize + j * ( parameters.squareSize + parameters.wallSize),
-              parameters.wallSize,
-              parameters.squareSize);
-        }
-      }
-    }
-
-    // draw horizontal walls
-    for(var i = 0; i < matrixWallY.length; i++) {
-      for(var j = 0; j < matrixWallY[i].length; j++) {
-        if(matrixWallY[i][j] !== 0) {
-          ctx.fillStyle = getColor(matrixWallY[i][j]);
-          ctx.fillRect(parameters.wallSize + i * ( parameters.squareSize + parameters.wallSize),
-              j * ( parameters.squareSize + parameters.wallSize),
-              parameters.squareSize,
-              parameters.wallSize);
-        }
-      }
-    }
-
-    if(parameters.draw.path) {
-      ctx.fillStyle = parameters.style.pathColor;
-      findEndPosition();
-      var solution = findSolutionPath(startPosition, endPosition);
-      for(var i = 0; i < solution.length; i++) {
-         drawSquare(solution[i][0], solution[i][1]);
-         if(i > 0) {
-           drawWallBetween(solution[i-1][0], solution[i-1][1], solution[i][0], solution[i][1])
-         }
-      }
-    }
-
-    if(parameters.draw.start) {
-      ctx.fillStyle = parameters.style.startColor;
-      drawSquare(startPosition.x, startPosition.y);
-    }
-
-    if(parameters.draw.end) {
-      findEndPosition();
-      ctx.fillStyle = parameters.style.endColor;
-      drawSquare(endPosition[0], endPosition[1]);
-    }
-
-  }
 
 //////// Initialisation
 
@@ -225,21 +33,21 @@ var labWallY = []; // size: x: n, y: n+1
 
 // start with an empty labyrinth of the correct size
 labyrinth = [];
-for(var i = 0; i < parameters.width; i++) {
+for(var i = 0; i < engineParameters.width; i++) {
   labyrinth.push([]);
-  for(var j = 0; j < parameters.height; j++) {
+  for(var j = 0; j < engineParameters.height; j++) {
     labyrinth[i].push(0);
   }
 }
-for(var i = 0; i < parameters.width + 1; i++) {
+for(var i = 0; i < engineParameters.width + 1; i++) {
   labWallX.push([]);
-  for(var j = 0; j < parameters.height; j++) {
+  for(var j = 0; j < engineParameters.height; j++) {
     labWallX[i].push(0);
   }
 }
-for(var i = 0; i < parameters.width; i++) {
+for(var i = 0; i < engineParameters.width; i++) {
   labWallY.push([]);
-  for(var j = 0; j < parameters.height + 1; j++) {
+  for(var j = 0; j < engineParameters.height + 1; j++) {
     labWallY[i].push(0);
   }
 }
@@ -248,8 +56,8 @@ for(var i = 0; i < parameters.width; i++) {
 function isNotHollowAndValid(x,y) {
     return x > -1
         && y > -1
-        && x < parameters.width
-        && y < parameters.height
+        && x < engineParameters.width
+        && y < engineParameters.height
         && labyrinth[x][y] === 0;
 }
 
@@ -257,8 +65,8 @@ function isNotHollowAndValid(x,y) {
 function isHollowAndValid(x,y) {
     return x > -1
         && y > -1
-        && x < parameters.width
-        && y < parameters.height
+        && x < engineParameters.width
+        && y < engineParameters.height
         && labyrinth[x][y] > 0;
 }
 
@@ -279,7 +87,7 @@ function diggWall(fromX, fromY, toX, toY) {
     }
 }
 
-function tryToGrow(fromX, fromY, toX, toY) {
+function tryToGrow(fromX, fromY, toX, toY, stack) {
     if(isNotHollowAndValid(toX, toY)) {
 
         labyrinth[toX][toY] = labyrinth[fromX][fromY] + 1;
@@ -378,15 +186,15 @@ function shuffleArray4(arr) {
 }
 
 
-function growSquare(x,y) {
+function growSquare(x,y, stack) {
 
 
     var arr = [0, 1, 2, 3];
 
     shuffleArray4(arr);
 
-    if(parameters.useGlobalDirection) {
-      if(Math.random() < parameters.goToGlobalDirectionProbability) {
+    if(engineParameters.useGlobalDirection) {
+      if(Math.random() < engineParameters.goToGlobalDirectionProbability) {
         for(var i = 0; i < arr.length; i++) {
           if(arr[i] === globalGrowingDirection) {
             arr[i] = arr[0];
@@ -400,16 +208,16 @@ function growSquare(x,y) {
     // try to go in that number of direction
     var numberDirection = 1;
     var rand = Math.random();
-    if(rand > parameters.growProbabilities[1]) {
+    if(rand > engineParameters.growProbabilities[1]) {
       numberDirection = 3;
-    } else if(rand > parameters.growProbabilities[0]) {
+    } else if(rand > engineParameters.growProbabilities[0]) {
       numberDirection = 2;
     }
 
     var success = 0;
     for(var i = 0; i < 4; i++) {
         var goCoord = directionsToCoordinates(x, y, arr[i])
-        var hasGrown = tryToGrow(x, y, goCoord[0], goCoord[1]);
+        var hasGrown = tryToGrow(x, y, goCoord[0], goCoord[1], stack);
         if(hasGrown) {
             success++;
         }
@@ -503,15 +311,15 @@ function findNotHollowSquareWithHollowNeighboor(){
     return false;
 }
 
-// stores the leafs to process;
-var stack = [];
-var start = [startPosition.x, startPosition.y];
-
 // 0, 1, 2, 3 (n, e, s, w)
 var globalGrowingDirection = Math.floor(Math.random() * 4);
 
-if(!engineParameters.vizualizeGrow) {
-  ////////// Use this code to generate maze
+
+var generateMaze = function() {
+  // stores the leafs to process;
+  var stack = [];
+  var start = [startPosition.x, startPosition.y];
+  
   while(start) {
     stack.push([start[0], start[1]]);
     if(start.length === 4) {
@@ -525,44 +333,19 @@ if(!engineParameters.vizualizeGrow) {
 
     while(stack.length > 0) {
       var leaf = stack.shift();
-      growSquare(leaf[0], leaf[1]);
+      growSquare(leaf[0], leaf[1], stack);
     }
 
     start = findNotHollowSquareWithHollowNeighboor();
   }
-
-  drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
-
-} else {
-  ////////// Use this code to display progression
-
-  stack.push(start);
-  labyrinth[start[0]][start[1]] = 1;
-
-  function iterate() {
-      if(stack.length != 0) {
-          var leaf = stack.shift();
-          growSquare(leaf[0], leaf[1]);
-          //drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
-          setTimeout(iterate, parameters.drawingTiming / stack.length);
-        }
-      else {
-          start = findNotHollowSquareWithHollowNeighboor();
-          if(start != false) {
-              stack.push([start[0], start[1]]);
-              globalGrowingDirection = coordinatesToDirections(start[2], start[3], start[0], start[1]);
-              labyrinth[start[0]][start[1]] = labyrinth[start[2]][start[3]] +1;
-              diggWall(start[2],start[3], start[0],start[1]);
-              drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
-              setTimeout(iterate, parameters.drawingTiming);
-
-          } else {
-            drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
-          }
-      }
-  }
-  setTimeout(iterate, parameters.drawingTiming);
-  drawLabyrinth(canvas, labyrinth, labWallX, labWallY, parameters);
-
 }
 
+generateMaze();
+
+findEndPosition();
+
+var solution = findSolutionPath(startPosition, endPosition);
+
+return { labyrinth: labyrinth, labWallX: labWallX, labWallY: labWallY, maxDistance: maxDistance, startPosition: startPosition, endPosition: endPosition, solution : solution };
+
+}
