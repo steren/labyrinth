@@ -1,8 +1,8 @@
 function labyrinth(engineParameters) {
 
   var defaultEngineParameters = {
-      width: 20,
-      height: 20,
+      width: 20, //units
+      height: 20, //units
       startRandom : true,
       startPosition: {x:0, y:0},
       // between 0 and first element: no divergeance, first parameter and second : 2 tunnels, secod anfd 1 : 3 tunnels

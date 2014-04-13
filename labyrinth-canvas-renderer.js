@@ -2,14 +2,12 @@ function drawLabyrinth(canvasElement, parameters, matrix, matrixWallX, matrixWal
 
     /** Parameters needed to render the maze */
     var defaultParameters = { 
-      /** ideal ratio to respect between the suqre size and the wall size */
-      squareWallRatio : 10,
-      squareSize : 10, //px
-      wallSize : 4,
+      squareSize : 20, //px
+      wallSize : 8, //px
       style: {
         backgroundColor: '#000',
         squareColor: '#fff',
-        startColor: '#f00',
+        startColor: '#00f',
         endColor: '#0f0',
         pathColor: '#aaf'
       },
@@ -26,16 +24,6 @@ function drawLabyrinth(canvasElement, parameters, matrix, matrixWallX, matrixWal
 
     var width = matrix.length;
     var height = matrix[0].length;
-
-
-    /** Will set parameters.squareSize and wallSize to better match the desired width and height considering the width and height of the parameters */
-    function computeSquareSize(desiredWidth, desiredHeight, parameters) {
-      var sizeW = desiredWidth / ( width * (1 + 1 / parameters.squareWallRatio));
-      var sizeH = desiredHeight / ( height * (1 + 1 / parameters.squareWallRatio));
-
-      parameters.squareSize = Math.floor(Math.min(sizeW, sizeH));
-      parameters.wallSize = Math.ceil(parameters.squareSize / parameters.squareWallRatio);
-    };
 
     function getColor(value) {
       if(!parameters.colorScheme) {
