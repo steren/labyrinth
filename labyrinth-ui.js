@@ -17,7 +17,14 @@ var computeAndDraw = function() {
   /** Parameters needed to render the maze */
   var renderParameters = {
       squareSize : squareSize,
-      wallSize : wallSize
+      wallSize : wallSize,
+      style: {
+        backgroundColor: '#bbada0',
+        squareColor: '#faf8ef',
+        startColor: '#f2b179',
+        endColor: '#edc22e',
+        pathColor: 'rgb(238, 228, 218)'
+      }
   };
 
   var renderArtParameters = { 
