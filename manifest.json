@@ -1,0 +1,12 @@
+{
+  "name": "Labyrinth",
+  "description": "Simple maze generator",
+  "version": "1.0",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "offline_enabled": true,
+  "icons": { "16": "labyrinth-16.png", "128": "labyrinth-128.png" }
+}
