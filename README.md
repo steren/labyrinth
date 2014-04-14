@@ -1,4 +1,4 @@
-[Labyrinth](steren.fr/labyrinth)
+[Labyrinth](http://steren.fr/labyrinth)
 =========
 
 Simple maze generator. 
@@ -21,7 +21,7 @@ Roadmap
 Easter egg
 ----------
 
-Add [`#colors`](steren.fr/labyrinth#colors) to the end of the URL for a visual surprise (be patient, it can take dome time to render).
+Add [`#colors`](http://steren.fr/labyrinth#colors) to the end of the URL for a visual surprise (be patient, it can take dome time to render).
 
 For developers
 --------------
