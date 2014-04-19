@@ -66,12 +66,40 @@ function drawLabyrinth(canvasElement, parameters, matrix, matrixWallX, matrixWal
 
     var ctx = canvas.getContext('2d');
 
+    function getDrawingFunction(draw) {
+        if(draw === 'circle') {
+            return drawCircle;
+        } else if(draw === 'arrow') {
+            return drawArrow;
+        } else {
+            return drawSquare;
+        }
+    }
+
     function drawSquare(x,y) {
       ctx.fillRect(parameters.wallSize + x * ( parameters.squareSize + parameters.wallSize),
           parameters.wallSize + y * ( parameters.squareSize + parameters.wallSize),
           parameters.squareSize,
           parameters.squareSize);
     };
+
+    function drawArrow(x, y) {
+      var originX = parameters.wallSize + x * ( parameters.squareSize + parameters.wallSize);
+      var originY = parameters.wallSize + y * ( parameters.squareSize + parameters.wallSize);
+      ctx.beginPath();
+      ctx.moveTo(originX + parameters.squareSize * 3 / 4, originY + parameters.squareSize * 3 / 4);
+      ctx.lineTo(originX + parameters.squareSize  * 3 / 4, originY);
+      ctx.lineTo(originX, originY + parameters.squareSize  * 3 / 4);
+      ctx.fill();
+    }
+    
+    function drawCircle(x, y) {
+      ctx.beginPath();
+      ctx.arc(parameters.wallSize + x * ( parameters.squareSize + parameters.wallSize) + parameters.squareSize / 2,
+        parameters.wallSize + y * ( parameters.squareSize + parameters.wallSize)  + parameters.squareSize / 2,
+        parameters.squareSize / 2, 0, 2 * Math.PI, false);
+      ctx.fill();
+    }
 
     function drawWallBetween(fromX, fromY, toX, toY) {
       var diffX = toX - fromX;
@@ -170,12 +198,14 @@ function drawLabyrinth(canvasElement, parameters, matrix, matrixWallX, matrixWal
 
     if(parameters.draw.start) {
       ctx.fillStyle = parameters.style.startColor;
-      drawSquare(startPosition.x, startPosition.y);
+      var drawingFunc = getDrawingFunction(parameters.draw.start);
+      drawingFunc(startPosition.x, startPosition.y);
     }
 
     if(parameters.draw.end) {
       ctx.fillStyle = parameters.style.endColor;
-      drawSquare(endPosition[0], endPosition[1]);
+      var drawingFunc = getDrawingFunction(parameters.draw.end);
+      drawingFunc(endPosition[0], endPosition[1]);
     }
 
   }

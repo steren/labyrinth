@@ -38,7 +38,9 @@ var computeAndDraw = function() {
     /** Parameters needed to generate the maze */
     engineParameters = {
       width: computedWidth, //units
-      height: computedHeight //units
+      height: computedHeight, //units
+      startRandom: false,
+      startPosition: {x:0, y:0}
     }
 
     /** Parameters needed to render the maze */
@@ -51,7 +53,11 @@ var computeAndDraw = function() {
         startColor: '#f2b179',
         endColor: '#edc22e',
         pathColor: 'rgb(238, 228, 218)'
-      } 
+      },
+      draw: {
+        start : 'arrow',
+        end : 'circle'
+      },
     };
   }
   
