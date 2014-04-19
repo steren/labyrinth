@@ -48,7 +48,7 @@ var computeAndDraw = function() {
       squareSize : squareSize,
       wallSize : wallSize,
       style: {
-        backgroundColor: '#bbada0',
+        backgroundColor: '#8e7763',
         squareColor: '#faf8ef',
         startColor: '#f2b179',
         endColor: '#edc22e',
